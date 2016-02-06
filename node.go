@@ -71,6 +71,9 @@ type Node interface {
 
 	// Raw returns the raw JSON string in []byte
 	Raw() []byte
+
+	// Type returns the Type of the containing JSON value
+	Type() Type
 }
 
 // NewNode returns an initialized empty Node value
@@ -106,4 +109,40 @@ func (n *rootNode) UnmarshalJSON(b []byte) error {
 // Raw implements Node
 func (n *rootNode) Raw() []byte {
 	return n.buf
+}
+
+// Type implements Node
+func (n rootNode) Type() Type {
+
+	switch {
+	case n.buf == nil:
+		// for nil raw, return TypeUndefined
+		return TypeUndefined
+	case len(n.buf) == 0:
+		// for empty JSON string, return TypeUnknown
+		return TypeUnknown
+	case n.buf[0] == '"':
+		// simply examine the first character
+		// to determine the value type
+		return TypeString
+	case n.buf[0] == '{':
+		// simply examine the first character
+		// to determine the value type
+		return TypeObject
+	case n.buf[0] == '[':
+		// simply examine the first character
+		// to determine the value type
+		return TypeArray
+	case string(n.buf) == "true":
+		fallthrough
+	case string(n.buf) == "false":
+		return TypeBool
+	case string(n.buf) == "null":
+		return TypeNull
+	case IsNumJSON(n.buf):
+		return TypeNumber
+	}
+
+	// return TypeUnknown for all other cases
+	return TypeUnknown
 }

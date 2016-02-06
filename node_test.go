@@ -85,3 +85,55 @@ func TestNode_Unmarshal(t *testing.T) {
 	}
 
 }
+
+func TestNode_Type(t *testing.T) {
+
+	readJSON := func(str string) (n lzjson.Node) {
+		n, err := lzjson.Decode(strings.NewReader(str))
+		if err != nil {
+			t.Errorf("unexpected error: %#v", err.Error())
+			return nil
+		}
+		return
+	}
+
+	if want, have := lzjson.TypeUndefined, (lzjson.NewNode()).Type(); want != have {
+		t.Errorf("expected %s, got %s", want, have)
+	}
+	if want, have := lzjson.TypeUnknown, readJSON("").Type(); want != have {
+		t.Errorf("expected %s, got %s", want, have)
+	}
+	if want, have := lzjson.TypeString, readJSON(`"string"`).Type(); want != have {
+		t.Errorf("expected %s, got %s", want, have)
+	}
+	if want, have := lzjson.TypeNumber, readJSON("1234").Type(); want != have {
+		t.Errorf("expected %s, got %s", want, have)
+	}
+	if want, have := lzjson.TypeNumber, readJSON("-1234.567").Type(); want != have {
+		t.Errorf("expected %s, got %s", want, have)
+	}
+	if want, have := lzjson.TypeNumber, readJSON("-1234.567E+5").Type(); want != have {
+		t.Errorf("expected %s, got %s", want, have)
+	}
+
+	if want, have := lzjson.TypeObject, readJSON(`{ "foo": "bar" }`).Type(); want != have {
+		t.Errorf("expected %s, got %s", want, have)
+	}
+	if want, have := lzjson.TypeArray, readJSON(`[ "foo", "bar" ]`).Type(); want != have {
+		t.Errorf("expected %s, got %s", want, have)
+	}
+
+	if want, have := lzjson.TypeBool, readJSON("true").Type(); want != have {
+		t.Errorf("expected %s, got %s", want, have)
+	}
+	if want, have := lzjson.TypeBool, readJSON("false").Type(); want != have {
+		t.Errorf("expected %s, got %s", want, have)
+	}
+	if want, have := lzjson.TypeNull, readJSON("null").Type(); want != have {
+		t.Errorf("expected %s, got %s", want, have)
+	}
+
+	if want, have := lzjson.TypeUnknown, readJSON("404 not found").Type(); want != have {
+		t.Errorf("expected %s, got %s", want, have)
+	}
+}
