@@ -137,3 +137,108 @@ func TestNode_Type(t *testing.T) {
 		t.Errorf("expected %s, got %s", want, have)
 	}
 }
+
+func TestNode_Get(t *testing.T) {
+	str := dummyJSONStr()
+	n, err := lzjson.Decode(strings.NewReader(str))
+	if err != nil {
+		t.Errorf("unexpected error: %#v", err.Error())
+	}
+
+	if want, have := lzjson.TypeUndefined, n.Get("notExists").Type(); want != have {
+		t.Errorf("expected %#v, got %#v", want, have)
+	}
+
+	if n := n.Get("number"); n == nil {
+		t.Error("unexpected nil value")
+	} else if want, have := lzjson.TypeNumber, n.Type(); want != have {
+		t.Errorf("expected %s, got %s", want, have)
+	} else if want, have := 1234.56, n.Number(); want != have {
+		t.Errorf("expected %#v, got %#v", want, have)
+	} else if want, have := "", n.String(); want != have {
+		t.Errorf("expected %#v, got %#v", want, have)
+	} else if want, have := false, n.Bool(); want != have {
+		t.Errorf("expected %#v, got %#v", want, have)
+	} else if want, have := false, n.IsNull(); want != have {
+		t.Errorf("expected %#v, got %#v", want, have)
+	}
+
+	if n := n.Get("string"); n == nil {
+		t.Error("unexpected nil value")
+	} else if want, have := lzjson.TypeString, n.Type(); want != have {
+		t.Errorf("expected %s, got %s", want, have)
+	} else if want, have := float64(0), n.Number(); want != have {
+		t.Errorf("expected %#v, got %#v", want, have)
+	} else if want, have := "foo bar", n.String(); want != have {
+		t.Errorf("expected %#v, got %#v", want, have)
+	} else if want, have := false, n.Bool(); want != have {
+		t.Errorf("expected %#v, got %#v", want, have)
+	} else if want, have := false, n.IsNull(); want != have {
+		t.Errorf("expected %#v, got %#v", want, have)
+	} else if want, have := 7, n.Len(); want != have {
+		t.Errorf("expected %#v, got %#v", want, have)
+	}
+
+	var nilJ lzjson.Node
+	if n := n.Get("arrayOfString"); n == nil {
+		t.Error("unexpected nil value")
+	} else if want, have := lzjson.TypeArray, n.Type(); want != have {
+		t.Errorf("expected %s, got %s", want, have)
+	} else if want, have := 4, n.Len(); want != have {
+		t.Errorf("expected %#v, got %#v", want, have)
+	} else if want, have := "one", n.GetN(0).String(); want != have {
+		t.Errorf("expected %#v, got %#v", want, have)
+	} else if want, have := "two", n.GetN(1).String(); want != have {
+		t.Errorf("expected %#v, got %#v", want, have)
+	} else if want, have := "three", n.GetN(2).String(); want != have {
+		t.Errorf("expected %#v, got %#v", want, have)
+	} else if want, have := "four", n.GetN(3).String(); want != have {
+		t.Errorf("expected %#v, got %#v", want, have)
+	} else if want, have := nilJ, n.GetN(4); want != have {
+		t.Errorf("expected %#v, got %#v", want, have)
+	} else if want, have := false, n.Bool(); want != have {
+		t.Errorf("expected %#v, got %#v", want, have)
+	} else if want, have := false, n.IsNull(); want != have {
+		t.Errorf("expected %#v, got %#v", want, have)
+	}
+
+	if n := n.Get("object"); n == nil {
+		t.Error("unexpected nil value")
+	} else if want, have := lzjson.TypeObject, n.Type(); want != have {
+		t.Errorf("expected %s, got %s", want, have)
+	} else if p := n.Get("answer"); p == nil {
+		t.Error("unexpected nil value")
+	} else if want, have := lzjson.TypeNumber, p.Type(); want != have {
+		t.Errorf("expected %s, got %s", want, have)
+	} else if want, have := false, n.Bool(); want != have {
+		t.Errorf("expected %#v, got %#v", want, have)
+	} else if want, have := false, n.IsNull(); want != have {
+		t.Errorf("expected %#v, got %#v", want, have)
+	}
+
+	if n := n.Get("true"); n == nil {
+		t.Error("unexpected nil value")
+	} else if want, have := lzjson.TypeBool, n.Type(); want != have {
+		t.Errorf("expected %s, got %s", want, have)
+	} else if want, have := true, n.Bool(); want != have {
+		t.Errorf("expected %#v, got %#v", want, have)
+	}
+
+	if n := n.Get("false"); n == nil {
+		t.Error("unexpected nil value")
+	} else if want, have := lzjson.TypeBool, n.Type(); want != have {
+		t.Errorf("expected %s, got %s", want, have)
+	} else if want, have := false, n.Bool(); want != have {
+		t.Errorf("expected %#v, got %#v", want, have)
+	} else if want, have := false, n.IsNull(); want != have {
+		t.Errorf("expected %#v, got %#v", want, have)
+	}
+
+	if n := n.Get("null"); n == nil {
+		t.Error("unexpected nil value")
+	} else if want, have := lzjson.TypeNull, n.Type(); want != have {
+		t.Errorf("expected %s, got %s", want, have)
+	} else if want, have := true, n.IsNull(); want != have {
+		t.Errorf("expected %#v, got %#v", want, have)
+	}
+}

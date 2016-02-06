@@ -74,6 +74,31 @@ type Node interface {
 
 	// Type returns the Type of the containing JSON value
 	Type() Type
+
+	// Get gets object's inner value.
+	// Only works with Object value type
+	Get(key string) (inner Node)
+
+	// Len gets the length of the value
+	// Only works with Array and String value type
+	Len() int
+
+	// GetN gets array's inner value.
+	// Only works with Array value type.
+	// 0 for the first item.
+	GetN(nth int) Node
+
+	// String unmarshal the JSON into string then return
+	String() (v string)
+
+	// Number unmarshal the JSON into float64 then return
+	Number() (v float64)
+
+	// Bool unmarshal the JSON into bool then return
+	Bool() (v bool)
+
+	// IsNull tells if the JSON value is null or not
+	IsNull() bool
 }
 
 // NewNode returns an initialized empty Node value
@@ -145,4 +170,74 @@ func (n rootNode) Type() Type {
 
 	// return TypeUnknown for all other cases
 	return TypeUnknown
+}
+
+// Get implements Node
+func (n *rootNode) Get(key string) (inner Node) {
+	if n.Type() != TypeObject {
+		inner = &rootNode{nil}
+		return
+	}
+
+	vmap := map[string]rootNode{}
+	if err := n.Unmarshal(&vmap); err != nil {
+		inner = &rootNode{nil} // dump the error
+	} else if val, ok := vmap[key]; !ok {
+		inner = &rootNode{nil}
+	} else {
+		inner = &val
+	}
+	return
+}
+
+// Len gets the length of the value
+// Only works with Array and String value type
+func (n *rootNode) Len() int {
+	switch n.Type() {
+	case TypeString:
+		return len(string(n.buf)) - 2 // subtact the 2 " marks
+	case TypeArray:
+		vslice := []*rootNode{}
+		n.Unmarshal(&vslice)
+		return len(vslice)
+	}
+	// default return -1 (for type mismatch)
+	return -1
+}
+
+// GetN implements Node
+func (n *rootNode) GetN(nth int) Node {
+	if n.Type() != TypeArray {
+		return nil
+	}
+
+	vslice := []rootNode{}
+	n.Unmarshal(&vslice)
+	if nth < len(vslice) {
+		return &vslice[nth]
+	}
+	return nil
+}
+
+// String implements Node
+func (n *rootNode) String() (v string) {
+	n.Unmarshal(&v)
+	return
+}
+
+// Number implements Node
+func (n *rootNode) Number() (v float64) {
+	n.Unmarshal(&v)
+	return
+}
+
+// Bool implements Node
+func (n *rootNode) Bool() (v bool) {
+	n.Unmarshal(&v)
+	return
+}
+
+// IsNull implements Node
+func (n *rootNode) IsNull() bool {
+	return n.Type() == TypeNull
 }
