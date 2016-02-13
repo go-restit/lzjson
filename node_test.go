@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/go-lzjson/lzjson"
+	"github.com/go-restit/lzjson"
 )
 
 func TestIsNumJSON(t *testing.T) {

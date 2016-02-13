@@ -1,10 +1,10 @@
-# lzjson [![GoDoc](https://godoc.org/github.com/go-lzjson/lzjson?status.svg)][godoc] [![Travis CI results][travis]](https://travis-ci.org/go-lzjson/lzjson)
+# lzjson [![GoDoc](https://godoc.org/github.com/go-restit/lzjson?status.svg)][godoc] [![Travis CI results][travis]](https://travis-ci.org/go-restit/lzjson)
 
 **lzjson** is a JSON decoding library aims to provide
 flexibility in parsing JSON.
 
-[godoc]: https://godoc.org/github.com/go-lzjson/lzjson
-[travis]: https://api.travis-ci.org/go-lzjson/lzjson.svg?branch=master
+[godoc]: https://godoc.org/github.com/go-restit/lzjson
+[travis]: https://api.travis-ci.org/go-restit/lzjson.svg?branch=master
 
 
 ## Contirbuting
@@ -21,8 +21,8 @@ To fix an existing bug or implement a new feature, please:
 4. Open a pull request referencing the issue.
 5. Have fun :-)
 
-[issue tracker]: https://github.com/go-lzjson/lzjson/issues
-[pull requests]: https://github.com/go-lzjson/lzjson/pulls
+[issue tracker]: https://github.com/go-restit/lzjson/issues
+[pull requests]: https://github.com/go-restit/lzjson/pulls
 
 
 ## Licence
