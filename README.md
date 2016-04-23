@@ -1,10 +1,14 @@
-# lzjson [![GoDoc](https://godoc.org/github.com/go-restit/lzjson?status.svg)][godoc] [![Travis CI results][travis]](https://travis-ci.org/go-restit/lzjson)
+# lzjson [![GoDoc][godoc-badge]][godoc] [![Travis CI results][travis-badge]][travis] [![AppVeyor][appveyor-badge]][appveyor]
 
 **lzjson** is a JSON decoding library aims to provide
 flexibility in parsing JSON.
 
 [godoc]: https://godoc.org/github.com/go-restit/lzjson
-[travis]: https://api.travis-ci.org/go-restit/lzjson.svg?branch=master
+[godoc-badge]: https://godoc.org/github.com/go-restit/lzjson?status.svg
+[travis]: https://travis-ci.org/go-restit/lzjson?branch=master
+[travis-badge]: https://api.travis-ci.org/go-restit/lzjson.svg?branch=master
+[appveyor]: https://ci.appveyor.com/project/yookoala/lzjson?branch=master
+[appveyor-badge]: https://ci.appveyor.com/api/projects/status/github/go-restit/lzjson?branch=master&svg=true
 
 
 ## Contirbuting
