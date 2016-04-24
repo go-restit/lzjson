@@ -95,6 +95,9 @@ type Node interface {
 	// Number unmarshal the JSON into float64 then return
 	Number() (v float64)
 
+	// Int unmarshal the JSON into int the return
+	Int() (v int)
+
 	// Bool unmarshal the JSON into bool then return
 	Bool() (v bool)
 
@@ -234,6 +237,11 @@ func (n *rootNode) String() (v string) {
 func (n *rootNode) Number() (v float64) {
 	n.Unmarshal(&v)
 	return
+}
+
+// Int implements Node
+func (n *rootNode) Int() (v int) {
+	return int(n.Number())
 }
 
 // Bool implements Node

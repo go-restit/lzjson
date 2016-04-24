@@ -155,6 +155,8 @@ func TestNode_Get(t *testing.T) {
 		t.Errorf("expected %s, got %s", want, have)
 	} else if want, have := 1234.56, n.Number(); want != have {
 		t.Errorf("expected %#v, got %#v", want, have)
+	} else if want, have := 1234, n.Int(); want != have {
+		t.Errorf("expected %#v, got %#v", want, have)
 	} else if want, have := "", n.String(); want != have {
 		t.Errorf("expected %#v, got %#v", want, have)
 	} else if want, have := false, n.Bool(); want != have {
