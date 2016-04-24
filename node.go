@@ -2,6 +2,7 @@ package lzjson
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"regexp"
@@ -18,7 +19,7 @@ type Type int
 // 1. true and false are combined as bool for obvious reason; and
 // 2. TypeUnknown for empty strings
 const (
-	TypeUnknown   Type = -1
+	TypeError     Type = -1
 	TypeUndefined Type = iota
 	TypeString
 	TypeNumber
@@ -47,7 +48,7 @@ func (t Type) String() string {
 	case TypeNull:
 		return "TypeNull"
 	}
-	return "TypeUnknown"
+	return "TypeError"
 }
 
 // reNumber is the regular expression to match
@@ -99,6 +100,9 @@ type Node interface {
 
 	// IsNull tells if the JSON value is null or not
 	IsNull() bool
+
+	// Error returns the JSON parse error, if any
+	Error() error
 }
 
 // NewNode returns an initialized empty Node value
@@ -111,13 +115,14 @@ func NewNode() Node {
 // returns a Node of it
 func Decode(reader io.Reader) (n Node, err error) {
 	b, err := ioutil.ReadAll(reader)
-	n = &rootNode{b}
+	n = &rootNode{buf: b}
 	return
 }
 
 // rootNode is the default implementation of Node
 type rootNode struct {
 	buf []byte
+	err error
 }
 
 // Unmarshal implements Node
@@ -140,12 +145,12 @@ func (n *rootNode) Raw() []byte {
 func (n rootNode) Type() Type {
 
 	switch {
-	case n.buf == nil:
+	case n.err != nil:
+		// for error, return TypeError
+		return TypeError
+	case n.buf == nil || len(n.buf) == 0:
 		// for nil raw, return TypeUndefined
 		return TypeUndefined
-	case len(n.buf) == 0:
-		// for empty JSON string, return TypeUnknown
-		return TypeUnknown
 	case n.buf[0] == '"':
 		// simply examine the first character
 		// to determine the value type
@@ -169,21 +174,21 @@ func (n rootNode) Type() Type {
 	}
 
 	// return TypeUnknown for all other cases
-	return TypeUnknown
+	return TypeError
 }
 
 // Get implements Node
 func (n *rootNode) Get(key string) (inner Node) {
 	if n.Type() != TypeObject {
-		inner = &rootNode{nil}
+		inner = &rootNode{}
 		return
 	}
 
 	vmap := map[string]rootNode{}
 	if err := n.Unmarshal(&vmap); err != nil {
-		inner = &rootNode{nil} // dump the error
+		inner = &rootNode{err: err} // dump the error
 	} else if val, ok := vmap[key]; !ok {
-		inner = &rootNode{nil}
+		inner = &rootNode{err: fmt.Errorf("field %#v not found", key)}
 	} else {
 		inner = &val
 	}
@@ -240,4 +245,9 @@ func (n *rootNode) Bool() (v bool) {
 // IsNull implements Node
 func (n *rootNode) IsNull() bool {
 	return n.Type() == TypeNull
+}
+
+// Error implements Node
+func (n *rootNode) Error() error {
+	return n.err
 }

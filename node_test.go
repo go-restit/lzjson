@@ -100,7 +100,7 @@ func TestNode_Type(t *testing.T) {
 	if want, have := lzjson.TypeUndefined, (lzjson.NewNode()).Type(); want != have {
 		t.Errorf("expected %s, got %s", want, have)
 	}
-	if want, have := lzjson.TypeUnknown, readJSON("").Type(); want != have {
+	if want, have := lzjson.TypeUndefined, readJSON("").Type(); want != have {
 		t.Errorf("expected %s, got %s", want, have)
 	}
 	if want, have := lzjson.TypeString, readJSON(`"string"`).Type(); want != have {
@@ -133,7 +133,7 @@ func TestNode_Type(t *testing.T) {
 		t.Errorf("expected %s, got %s", want, have)
 	}
 
-	if want, have := lzjson.TypeUnknown, readJSON("404 not found").Type(); want != have {
+	if want, have := lzjson.TypeError, readJSON("404 not found").Type(); want != have {
 		t.Errorf("expected %s, got %s", want, have)
 	}
 }
@@ -145,7 +145,7 @@ func TestNode_Get(t *testing.T) {
 		t.Errorf("unexpected error: %#v", err.Error())
 	}
 
-	if want, have := lzjson.TypeUndefined, n.Get("notExists").Type(); want != have {
+	if want, have := lzjson.TypeError, n.Get("notExists").Type(); want != have {
 		t.Errorf("expected %#v, got %#v", want, have)
 	}
 
