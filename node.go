@@ -51,6 +51,11 @@ func (t Type) String() string {
 	return "TypeError"
 }
 
+// GoString implements fmt.GoStringer
+func (t Type) GoString() string {
+	return "lzjson." + t.String()
+}
+
 // reNumber is the regular expression to match
 // any JSON number values
 var reNum = regexp.MustCompile(`^-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+\-]?\d+)?$`)
