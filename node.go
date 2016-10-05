@@ -81,6 +81,10 @@ type Node interface {
 	// Type returns the Type of the containing JSON value
 	Type() Type
 
+	// GetKeys gets an array object's keys,
+	// or nil if not an object
+	GetKeys() []string
+
 	// Get gets object's inner value.
 	// Only works with Object value type
 	Get(key string) (inner Node)
@@ -129,8 +133,9 @@ func Decode(reader io.Reader) (n Node, err error) {
 
 // rootNode is the default implementation of Node
 type rootNode struct {
-	buf []byte
-	err error
+	buf    []byte
+	mapBuf map[string]rootNode
+	err    error
 }
 
 // Unmarshal implements Node
@@ -141,6 +146,7 @@ func (n *rootNode) Unmarshal(v interface{}) error {
 // UnmarshalJSON implements Node
 func (n *rootNode) UnmarshalJSON(b []byte) error {
 	n.buf = b
+	n.mapBuf = nil
 	return nil
 }
 
@@ -185,17 +191,37 @@ func (n rootNode) Type() Type {
 	return TypeError
 }
 
-// Get implements Node
-func (n *rootNode) Get(key string) (inner Node) {
+func (n *rootNode) genMapBuf() error {
 	if n.Type() != TypeObject {
-		inner = &rootNode{}
-		return
+		return fmt.Errorf("the node is not an object")
+	}
+	if n.mapBuf != nil {
+		return nil // previously done, use the previous result
 	}
 
-	vmap := map[string]rootNode{}
-	if err := n.Unmarshal(&vmap); err != nil {
+	// generate the map
+	n.mapBuf = map[string]rootNode{}
+	return n.Unmarshal(&n.mapBuf)
+}
+
+// GetKeys get object keys of the node.
+// If the node is not an object, returns nil
+func (n *rootNode) GetKeys() (keys []string) {
+	if err := n.genMapBuf(); err != nil {
+		return
+	}
+	keys = make([]string, 0, len(n.mapBuf))
+	for key := range n.mapBuf {
+		keys = append(keys, key)
+	}
+	return
+}
+
+// Get implements Node
+func (n *rootNode) Get(key string) (inner Node) {
+	if err := n.genMapBuf(); err != nil {
 		inner = &rootNode{err: err} // dump the error
-	} else if val, ok := vmap[key]; !ok {
+	} else if val, ok := n.mapBuf[key]; !ok {
 		inner = &rootNode{err: fmt.Errorf("field %#v not found", key)}
 	} else {
 		inner = &val

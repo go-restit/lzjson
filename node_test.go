@@ -244,3 +244,58 @@ func TestNode_Get(t *testing.T) {
 		t.Errorf("expected %#v, got %#v", want, have)
 	}
 }
+
+func TestNode_Get_error(t *testing.T) {
+	root, err := lzjson.Decode(strings.NewReader(`"hello string"`))
+	if err != nil {
+		t.Errorf("unexpected error: %s", err.Error())
+	}
+
+	n := root.Get("hello key")
+	if want, have := lzjson.TypeError, n.Type(); want != have {
+		t.Errorf("expected %#v, got %#v", want, have)
+	}
+	if n.Error() == nil {
+		t.Error("expected error, got nil")
+	} else if want, have := "the node is not an object", n.Error().Error(); want != have {
+		t.Errorf("expected %#v, got %#v", want, have)
+	}
+}
+
+func TestNode_GetKeys(t *testing.T) {
+
+	root, err := lzjson.Decode(strings.NewReader(`"hello string"`))
+	if err != nil {
+		t.Errorf("unexpected error: %s", err.Error())
+	}
+	if keys := root.GetKeys(); keys != nil {
+		t.Errorf("expected nil, got %#v", keys)
+	}
+
+	root, err = lzjson.Decode(strings.NewReader(`{
+		"hello": "world",
+		"foo": "bar"
+	}`))
+	if err != nil {
+		t.Errorf("unexpected error: %s", err.Error())
+	}
+	if want, have := lzjson.TypeObject, root.Type(); want != have {
+		t.Errorf("expected %#v, got %#v", want, have)
+		return
+	}
+
+	keys := root.GetKeys()
+	if want, have := 2, len(keys); want != have {
+		t.Errorf("expected len(keys) to be %#v, got %#v (%#v)", want, have, keys)
+		return
+	}
+	if want1, want2, have := "foo", "hello", keys[0]; want1 != have && want2 != have {
+		t.Errorf("expected %#v or %#v, got %#v", want1, want2, have)
+	}
+	if want, have := "foo", keys[1]; keys[0] == "hello" && want != have {
+		t.Errorf("expected keys[1] to be %#v, got %#v", want, have)
+	}
+	if want, have := "hello", keys[1]; keys[0] == "foo" && want != have {
+		t.Errorf("expected keys[1] to be %#v, got %#v", want, have)
+	}
+}
