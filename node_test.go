@@ -140,16 +140,16 @@ func TestNode_Type(t *testing.T) {
 
 func TestNode_Get(t *testing.T) {
 	str := dummyJSONStr()
-	n, err := lzjson.Decode(strings.NewReader(str))
+	root, err := lzjson.Decode(strings.NewReader(str))
 	if err != nil {
 		t.Errorf("unexpected error: %#v", err.Error())
 	}
 
-	if want, have := lzjson.TypeError, n.Get("notExists").Type(); want != have {
+	if want, have := lzjson.TypeError, root.Get("notExists").Type(); want != have {
 		t.Errorf("expected %#v, got %#v", want, have)
 	}
 
-	if n := n.Get("number"); n == nil {
+	if n := root.Get("number"); n == nil {
 		t.Error("unexpected nil value")
 	} else if want, have := lzjson.TypeNumber, n.Type(); want != have {
 		t.Errorf("expected %s, got %s", want, have)
@@ -165,7 +165,7 @@ func TestNode_Get(t *testing.T) {
 		t.Errorf("expected %#v, got %#v", want, have)
 	}
 
-	if n := n.Get("string"); n == nil {
+	if n := root.Get("string"); n == nil {
 		t.Error("unexpected nil value")
 	} else if want, have := lzjson.TypeString, n.Type(); want != have {
 		t.Errorf("expected %s, got %s", want, have)
@@ -182,7 +182,7 @@ func TestNode_Get(t *testing.T) {
 	}
 
 	var nilJ lzjson.Node
-	if n := n.Get("arrayOfString"); n == nil {
+	if n := root.Get("arrayOfString"); n == nil {
 		t.Error("unexpected nil value")
 	} else if want, have := lzjson.TypeArray, n.Type(); want != have {
 		t.Errorf("expected %s, got %s", want, have)
@@ -204,7 +204,7 @@ func TestNode_Get(t *testing.T) {
 		t.Errorf("expected %#v, got %#v", want, have)
 	}
 
-	if n := n.Get("object"); n == nil {
+	if n := root.Get("object"); n == nil {
 		t.Error("unexpected nil value")
 	} else if want, have := lzjson.TypeObject, n.Type(); want != have {
 		t.Errorf("expected %s, got %s", want, have)
@@ -218,7 +218,7 @@ func TestNode_Get(t *testing.T) {
 		t.Errorf("expected %#v, got %#v", want, have)
 	}
 
-	if n := n.Get("true"); n == nil {
+	if n := root.Get("true"); n == nil {
 		t.Error("unexpected nil value")
 	} else if want, have := lzjson.TypeBool, n.Type(); want != have {
 		t.Errorf("expected %s, got %s", want, have)
@@ -226,7 +226,7 @@ func TestNode_Get(t *testing.T) {
 		t.Errorf("expected %#v, got %#v", want, have)
 	}
 
-	if n := n.Get("false"); n == nil {
+	if n := root.Get("false"); n == nil {
 		t.Error("unexpected nil value")
 	} else if want, have := lzjson.TypeBool, n.Type(); want != have {
 		t.Errorf("expected %s, got %s", want, have)
@@ -236,7 +236,7 @@ func TestNode_Get(t *testing.T) {
 		t.Errorf("expected %#v, got %#v", want, have)
 	}
 
-	if n := n.Get("null"); n == nil {
+	if n := root.Get("null"); n == nil {
 		t.Error("unexpected nil value")
 	} else if want, have := lzjson.TypeNull, n.Type(); want != have {
 		t.Errorf("expected %s, got %s", want, have)
