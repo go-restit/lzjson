@@ -6,55 +6,8 @@ import (
 	"io"
 	"io/ioutil"
 	"regexp"
+	"strings"
 )
-
-// Type represents the different type of JSON values
-// (string, number, object, array, true, false, null)
-// true and false are combined as bool for obvious reason
-type Type int
-
-// These constant represents different JSON value types
-// as specified in http://www.json.org/
-// with some exception:
-// 1. true and false are combined as bool for obvious reason; and
-// 2. TypeUnknown for empty strings
-const (
-	TypeError     Type = -1
-	TypeUndefined Type = iota
-	TypeString
-	TypeNumber
-	TypeObject
-	TypeArray
-	TypeBool
-	TypeNull
-)
-
-// String returns string representations of
-// the Type value
-func (t Type) String() string {
-	switch t {
-	case TypeUndefined:
-		return "TypeUndefined"
-	case TypeString:
-		return "TypeString"
-	case TypeNumber:
-		return "TypeNumber"
-	case TypeObject:
-		return "TypeObject"
-	case TypeArray:
-		return "TypeArray"
-	case TypeBool:
-		return "TypeBool"
-	case TypeNull:
-		return "TypeNull"
-	}
-	return "TypeError"
-}
-
-// GoString implements fmt.GoStringer
-func (t Type) GoString() string {
-	return "lzjson." + t.String()
-}
 
 // reNumber is the regular expression to match
 // any JSON number values
@@ -133,6 +86,7 @@ func Decode(reader io.Reader) (n Node, err error) {
 
 // rootNode is the default implementation of Node
 type rootNode struct {
+	path   string
 	buf    []byte
 	mapBuf map[string]rootNode
 	err    error
@@ -193,7 +147,7 @@ func (n rootNode) Type() Type {
 
 func (n *rootNode) genMapBuf() error {
 	if n.Type() != TypeObject {
-		return fmt.Errorf("the node is not an object")
+		return ErrorNotObject
 	}
 	if n.mapBuf != nil {
 		return nil // previously done, use the previous result
@@ -217,12 +171,36 @@ func (n *rootNode) GetKeys() (keys []string) {
 	return
 }
 
+func (n *rootNode) keyPath(key string) string {
+	fmtKey := "." + key
+	if strings.IndexAny(key, " /-") >= 0 {
+		fmtKey = fmt.Sprintf("[%#v]", key)
+	}
+	return n.path + fmtKey
+}
+
 // Get implements Node
 func (n *rootNode) Get(key string) (inner Node) {
+	path := n.keyPath(key)
 	if err := n.genMapBuf(); err != nil {
-		inner = &rootNode{err: err} // dump the error
+		if err == ErrorNotObject {
+			path = n.path
+		}
+		inner = &rootNode{
+			path: path,
+			err: Error{
+				Path: "json" + path,
+				Err:  err,
+			},
+		}
 	} else if val, ok := n.mapBuf[key]; !ok {
-		inner = &rootNode{err: fmt.Errorf("field %#v not found", key)}
+		inner = &rootNode{
+			path: path,
+			err: Error{
+				Path: "json" + path,
+				Err:  ErrorUndefined,
+			},
+		}
 	} else {
 		inner = &val
 	}
@@ -244,18 +222,35 @@ func (n *rootNode) Len() int {
 	return -1
 }
 
+func (n *rootNode) nthPath(nth int) string {
+	return fmt.Sprintf("%s[%d]", n.path, nth)
+}
+
 // GetN implements Node
 func (n *rootNode) GetN(nth int) Node {
 	if n.Type() != TypeArray {
-		return nil
+		return &rootNode{
+			path: n.path,
+			err: Error{
+				Path: "json" + n.path,
+				Err:  ErrorNotArray,
+			},
+		}
 	}
 
+	path := n.nthPath(nth)
 	vslice := []rootNode{}
 	n.Unmarshal(&vslice)
 	if nth < len(vslice) {
 		return &vslice[nth]
 	}
-	return nil
+	return &rootNode{
+		path: path,
+		err: Error{
+			Path: "json" + path,
+			Err:  ErrorUndefined,
+		},
+	}
 }
 
 // String implements Node

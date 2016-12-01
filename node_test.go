@@ -181,7 +181,6 @@ func TestNode_Get(t *testing.T) {
 		t.Errorf("expected %#v, got %#v", want, have)
 	}
 
-	var nilJ lzjson.Node
 	if n := root.Get("arrayOfString"); n == nil {
 		t.Error("unexpected nil value")
 	} else if want, have := lzjson.TypeArray, n.Type(); want != have {
@@ -196,7 +195,7 @@ func TestNode_Get(t *testing.T) {
 		t.Errorf("expected %#v, got %#v", want, have)
 	} else if want, have := "four", n.GetN(3).String(); want != have {
 		t.Errorf("expected %#v, got %#v", want, have)
-	} else if want, have := nilJ, n.GetN(4); want != have {
+	} else if want, have := lzjson.ErrorUndefined, n.GetN(4).Error().(lzjson.Error).Err; want != have {
 		t.Errorf("expected %#v, got %#v", want, have)
 	} else if want, have := false, n.Bool(); want != have {
 		t.Errorf("expected %#v, got %#v", want, have)
@@ -257,9 +256,63 @@ func TestNode_Get_error(t *testing.T) {
 	}
 	if n.Error() == nil {
 		t.Error("expected error, got nil")
-	} else if want, have := "the node is not an object", n.Error().Error(); want != have {
+	} else if want, have := "json: not an object", n.Error().Error(); want != have {
 		t.Errorf("expected %#v, got %#v", want, have)
 	}
+
+	n = root.Get("hello")
+	if want, have := lzjson.TypeError, n.Type(); want != have {
+		t.Errorf("expected %#v, got %#v", want, have)
+	}
+	if n.Error() == nil {
+		t.Error("expected error, got nil")
+	} else if want, have := "json: not an object", n.Error().Error(); want != have {
+		t.Errorf("expected %#v, got %#v", want, have)
+	}
+
+	root, err = lzjson.Decode(strings.NewReader(`{"hello": "world"}`))
+	if err != nil {
+		t.Errorf("unexpected error: %s", err.Error())
+	}
+	n = root.Get("foo")
+	if want, have := lzjson.TypeError, n.Type(); want != have {
+		t.Errorf("expected %#v, got %#v", want, have)
+	}
+	if n.Error() == nil {
+		t.Error("expected error, got nil")
+	} else if want, have := "json.foo: undefined", n.Error().Error(); want != have {
+		t.Errorf("expected %#v, got %#v", want, have)
+	}
+
+}
+
+func TestNode_GetN_error(t *testing.T) {
+	root, err := lzjson.Decode(strings.NewReader(`"hello string"`))
+	if err != nil {
+		t.Errorf("unexpected error: %s", err.Error())
+	}
+
+	n := root.GetN(1)
+	if want, have := lzjson.TypeError, n.Type(); want != have {
+		t.Errorf("expected %#v, got %#v", want, have)
+	}
+	if n.Error() == nil {
+		t.Error("expected error, got nil")
+	} else if want, have := "json: not an array", n.Error().Error(); want != have {
+		t.Errorf("expected %#v, got %#v", want, have)
+	}
+
+	root, err = lzjson.Decode(strings.NewReader(`["hello", "world"]`))
+	n = root.GetN(2)
+	if want, have := lzjson.TypeError, n.Type(); want != have {
+		t.Errorf("expected %#v, got %#v", want, have)
+	}
+	if n.Error() == nil {
+		t.Error("expected error, got nil")
+	} else if want, have := "json[2]: undefined", n.Error().Error(); want != have {
+		t.Errorf("expected %#v, got %#v", want, have)
+	}
+
 }
 
 func TestNode_GetKeys(t *testing.T) {
