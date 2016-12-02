@@ -21,7 +21,7 @@ func (err ParseError) Error() string {
 	case ErrorNotArray:
 		return "not an array"
 	}
-	return "unknown error"
+	return "unknown parse error"
 }
 
 // GoString implements fmt.GoStringer
