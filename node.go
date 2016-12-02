@@ -78,10 +78,12 @@ func NewNode() Node {
 
 // Decode read and decodes a JSON from io.Reader then
 // returns a Node of it
-func Decode(reader io.Reader) (n Node, err error) {
+func Decode(reader io.Reader) Node {
 	b, err := ioutil.ReadAll(reader)
-	n = &rootNode{buf: b}
-	return
+	return &rootNode{
+		buf: b,
+		err: err,
+	}
 }
 
 // rootNode is the default implementation of Node

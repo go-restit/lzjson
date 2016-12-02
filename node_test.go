@@ -22,9 +22,9 @@ func TestNode_UnmarshalJSON(t *testing.T) {
 
 func TestNode_Unmarshal(t *testing.T) {
 	str := dummyJSONStr()
-	n, err := lzjson.Decode(strings.NewReader(str))
-	if err != nil {
-		t.Errorf("unexpected error: %#v", err.Error())
+	n := lzjson.Decode(strings.NewReader(str))
+	if err := n.ParseError(); err != nil {
+		t.Errorf("unexpected error: %#v", err)
 	}
 
 	type type1 struct {
@@ -77,8 +77,8 @@ func TestNode_Unmarshal(t *testing.T) {
 func TestNode_Type(t *testing.T) {
 
 	readJSON := func(str string) (n lzjson.Node) {
-		n, err := lzjson.Decode(strings.NewReader(str))
-		if err != nil {
+		n = lzjson.Decode(strings.NewReader(str))
+		if err := n.ParseError(); err != nil {
 			t.Errorf("unexpected error: %#v", err.Error())
 			return nil
 		}
@@ -128,8 +128,8 @@ func TestNode_Type(t *testing.T) {
 
 func TestNode_Get(t *testing.T) {
 	str := dummyJSONStr()
-	root, err := lzjson.Decode(strings.NewReader(str))
-	if err != nil {
+	root := lzjson.Decode(strings.NewReader(str))
+	if err := root.ParseError(); err != nil {
 		t.Errorf("unexpected error: %#v", err.Error())
 	}
 
@@ -233,8 +233,8 @@ func TestNode_Get(t *testing.T) {
 }
 
 func TestNode_Get_error(t *testing.T) {
-	root, err := lzjson.Decode(strings.NewReader(`"hello string"`))
-	if err != nil {
+	root := lzjson.Decode(strings.NewReader(`"hello string"`))
+	if err := root.ParseError(); err != nil {
 		t.Errorf("unexpected error: %s", err.Error())
 	}
 
@@ -258,8 +258,8 @@ func TestNode_Get_error(t *testing.T) {
 		t.Errorf("expected %#v, got %#v", want, have)
 	}
 
-	root, err = lzjson.Decode(strings.NewReader(`{"hello": "world"}`))
-	if err != nil {
+	root = lzjson.Decode(strings.NewReader(`{"hello": "world"}`))
+	if err := root.ParseError(); err != nil {
 		t.Errorf("unexpected error: %s", err.Error())
 	}
 	n = root.Get("foo")
@@ -275,8 +275,8 @@ func TestNode_Get_error(t *testing.T) {
 }
 
 func TestNode_GetN_error(t *testing.T) {
-	root, err := lzjson.Decode(strings.NewReader(`"hello string"`))
-	if err != nil {
+	root := lzjson.Decode(strings.NewReader(`"hello string"`))
+	if err := root.ParseError(); err != nil {
 		t.Errorf("unexpected error: %s", err.Error())
 	}
 
@@ -290,7 +290,7 @@ func TestNode_GetN_error(t *testing.T) {
 		t.Errorf("expected %#v, got %#v", want, have)
 	}
 
-	root, err = lzjson.Decode(strings.NewReader(`["hello", "world"]`))
+	root = lzjson.Decode(strings.NewReader(`["hello", "world"]`))
 	n = root.GetN(2)
 	if want, have := lzjson.TypeError, n.Type(); want != have {
 		t.Errorf("expected %#v, got %#v", want, have)
@@ -305,19 +305,19 @@ func TestNode_GetN_error(t *testing.T) {
 
 func TestNode_GetKeys(t *testing.T) {
 
-	root, err := lzjson.Decode(strings.NewReader(`"hello string"`))
-	if err != nil {
+	root := lzjson.Decode(strings.NewReader(`"hello string"`))
+	if err := root.ParseError(); err != nil {
 		t.Errorf("unexpected error: %s", err.Error())
 	}
 	if keys := root.GetKeys(); keys != nil {
 		t.Errorf("expected nil, got %#v", keys)
 	}
 
-	root, err = lzjson.Decode(strings.NewReader(`{
+	root = lzjson.Decode(strings.NewReader(`{
 		"hello": "world",
 		"foo": "bar"
 	}`))
-	if err != nil {
+	if err := root.ParseError(); err != nil {
 		t.Errorf("unexpected error: %s", err.Error())
 	}
 	if want, have := lzjson.TypeObject, root.Type(); want != have {
