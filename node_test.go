@@ -183,7 +183,7 @@ func TestNode_Get(t *testing.T) {
 		t.Errorf("expected %#v, got %#v", want, have)
 	} else if want, have := "four", n.GetN(3).String(); want != have {
 		t.Errorf("expected %#v, got %#v", want, have)
-	} else if want, have := lzjson.ErrorUndefined, n.GetN(4).Error().(lzjson.Error).Err; want != have {
+	} else if want, have := lzjson.ErrorUndefined, n.GetN(4).ParseError().(lzjson.Error).Err; want != have {
 		t.Errorf("expected %#v, got %#v", want, have)
 	} else if want, have := false, n.Bool(); want != have {
 		t.Errorf("expected %#v, got %#v", want, have)
@@ -242,9 +242,9 @@ func TestNode_Get_error(t *testing.T) {
 	if want, have := lzjson.TypeError, n.Type(); want != have {
 		t.Errorf("expected %#v, got %#v", want, have)
 	}
-	if n.Error() == nil {
+	if n.ParseError() == nil {
 		t.Error("expected error, got nil")
-	} else if want, have := "json: not an object", n.Error().Error(); want != have {
+	} else if want, have := "json: not an object", n.ParseError().Error(); want != have {
 		t.Errorf("expected %#v, got %#v", want, have)
 	}
 
@@ -252,9 +252,9 @@ func TestNode_Get_error(t *testing.T) {
 	if want, have := lzjson.TypeError, n.Type(); want != have {
 		t.Errorf("expected %#v, got %#v", want, have)
 	}
-	if n.Error() == nil {
+	if n.ParseError() == nil {
 		t.Error("expected error, got nil")
-	} else if want, have := "json: not an object", n.Error().Error(); want != have {
+	} else if want, have := "json: not an object", n.ParseError().Error(); want != have {
 		t.Errorf("expected %#v, got %#v", want, have)
 	}
 
@@ -266,9 +266,9 @@ func TestNode_Get_error(t *testing.T) {
 	if want, have := lzjson.TypeError, n.Type(); want != have {
 		t.Errorf("expected %#v, got %#v", want, have)
 	}
-	if n.Error() == nil {
+	if n.ParseError() == nil {
 		t.Error("expected error, got nil")
-	} else if want, have := "json.foo: undefined", n.Error().Error(); want != have {
+	} else if want, have := "json.foo: undefined", n.ParseError().Error(); want != have {
 		t.Errorf("expected %#v, got %#v", want, have)
 	}
 
@@ -284,9 +284,9 @@ func TestNode_GetN_error(t *testing.T) {
 	if want, have := lzjson.TypeError, n.Type(); want != have {
 		t.Errorf("expected %#v, got %#v", want, have)
 	}
-	if n.Error() == nil {
+	if n.ParseError() == nil {
 		t.Error("expected error, got nil")
-	} else if want, have := "json: not an array", n.Error().Error(); want != have {
+	} else if want, have := "json: not an array", n.ParseError().Error(); want != have {
 		t.Errorf("expected %#v, got %#v", want, have)
 	}
 
@@ -295,9 +295,9 @@ func TestNode_GetN_error(t *testing.T) {
 	if want, have := lzjson.TypeError, n.Type(); want != have {
 		t.Errorf("expected %#v, got %#v", want, have)
 	}
-	if n.Error() == nil {
+	if n.ParseError() == nil {
 		t.Error("expected error, got nil")
-	} else if want, have := "json[2]: undefined", n.Error().Error(); want != have {
+	} else if want, have := "json[2]: undefined", n.ParseError().Error(); want != have {
 		t.Errorf("expected %#v, got %#v", want, have)
 	}
 

@@ -66,8 +66,8 @@ type Node interface {
 	// IsNull tells if the JSON value is null or not
 	IsNull() bool
 
-	// Error returns the JSON parse error, if any
-	Error() error
+	// ParseError returns the JSON parse error, if any
+	ParseError() error
 }
 
 // NewNode returns an initialized empty Node value
@@ -281,7 +281,7 @@ func (n *rootNode) IsNull() bool {
 	return n.Type() == TypeNull
 }
 
-// Error implements Node
-func (n *rootNode) Error() error {
+// ParseError implements Node
+func (n *rootNode) ParseError() error {
 	return n.err
 }
