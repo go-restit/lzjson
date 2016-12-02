@@ -8,18 +8,6 @@ import (
 	"github.com/go-restit/lzjson"
 )
 
-func TestIsNumJSON(t *testing.T) {
-	if want, have := true, lzjson.IsNumJSON([]byte("-1234.56789E+12")); want != have {
-		t.Errorf("expected %#v, got %#v", want, have)
-	}
-	if want, have := true, lzjson.IsNumJSON([]byte("-1234.56789e+12")); want != have {
-		t.Errorf("expected %#v, got %#v", want, have)
-	}
-	if want, have := false, lzjson.IsNumJSON([]byte("-1234.56789A+12")); want != have {
-		t.Errorf("expected %#v, got %#v", want, have)
-	}
-}
-
 func TestNode_UnmarshalJSON(t *testing.T) {
 	str := dummyJSONStr()
 	n := lzjson.NewNode()

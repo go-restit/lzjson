@@ -13,9 +13,9 @@ import (
 // any JSON number values
 var reNum = regexp.MustCompile(`^-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+\-]?\d+)?$`)
 
-// IsNumJSON test a string and see if it match the
+// isNumJSON test a string and see if it match the
 // JSON definition of number
-func IsNumJSON(b []byte) bool {
+func isNumJSON(b []byte) bool {
 	return reNum.Match(b)
 }
 
@@ -137,7 +137,7 @@ func (n rootNode) Type() Type {
 		return TypeBool
 	case string(n.buf) == "null":
 		return TypeNull
-	case IsNumJSON(n.buf):
+	case isNumJSON(n.buf):
 		return TypeNumber
 	}
 
