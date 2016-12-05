@@ -271,6 +271,9 @@ func TestNode_Get_error(t *testing.T) {
 	} else if want, have := "json.foo: undefined", n.ParseError().Error(); want != have {
 		t.Errorf("expected %#v, got %#v", want, have)
 	}
+	if want, have := "json.foo: undefined", root.Get("foo").Get("hello").ParseError().Error(); want != have {
+		t.Errorf("expected %#v, got %#v", want, have)
+	}
 
 }
 
@@ -298,6 +301,12 @@ func TestNode_GetN_error(t *testing.T) {
 	if n.ParseError() == nil {
 		t.Error("expected error, got nil")
 	} else if want, have := "json[2]: undefined", n.ParseError().Error(); want != have {
+		t.Errorf("expected %#v, got %#v", want, have)
+	}
+	if want, have := "json: not an object", root.Get("hello").GetN(0).ParseError().Error(); want != have {
+		t.Errorf("expected %#v, got %#v", want, have)
+	}
+	if want, have := "json[3]: undefined", root.GetN(3).GetN(0).ParseError().Error(); want != have {
 		t.Errorf("expected %#v, got %#v", want, have)
 	}
 

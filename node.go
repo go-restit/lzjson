@@ -183,10 +183,21 @@ func (n *rootNode) keyPath(key string) string {
 
 // Get implements Node
 func (n *rootNode) Get(key string) (inner Node) {
+
+	// the child key path
 	path := n.keyPath(key)
+
+	// if there is previous error, inherit
+	if err := n.ParseError(); err != nil {
+		return &rootNode{
+			path: path,
+			err:  err,
+		}
+	}
+
 	if err := n.genMapBuf(); err != nil {
 		if err == ErrorNotObject {
-			path = n.path
+			path = n.path // fallback to the parent entity
 		}
 		inner = &rootNode{
 			path: path,
@@ -204,6 +215,7 @@ func (n *rootNode) Get(key string) (inner Node) {
 			},
 		}
 	} else {
+		val.path = path
 		inner = &val
 	}
 	return
@@ -230,6 +242,18 @@ func (n *rootNode) nthPath(nth int) string {
 
 // GetN implements Node
 func (n *rootNode) GetN(nth int) Node {
+
+	// the path to nth node
+	path := n.nthPath(nth)
+
+	// if there is previous error, inherit
+	if err := n.ParseError(); err != nil {
+		return &rootNode{
+			path: path,
+			err:  err,
+		}
+	}
+
 	if n.Type() != TypeArray {
 		return &rootNode{
 			path: n.path,
@@ -240,10 +264,10 @@ func (n *rootNode) GetN(nth int) Node {
 		}
 	}
 
-	path := n.nthPath(nth)
 	vslice := []rootNode{}
 	n.Unmarshal(&vslice)
 	if nth < len(vslice) {
+		vslice[nth].path = path
 		return &vslice[nth]
 	}
 	return &rootNode{
