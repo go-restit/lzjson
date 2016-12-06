@@ -69,15 +69,22 @@ type Thing struct {
 func main() {
   resp, err := http.Get("http://foobarapi.com/things")
 
+  // decode the json as usual
   json := lzjson.Decode(resp.Body)
   if code := json.Get("code").Int(); code != 200 {
     message := json.Get("message").String()
     panic(message)
   }
 
+  // get the things array
   things := json.Get("data")
-  for i := 0; i<=things.Len(); i++ {
-    thing := things.GetN(0)
+
+  // loop through the array
+  for i := 0; i<things.Len(); i++ {
+    thing := things.GetN(i)
+
+    // if the thing is not from earth, unmarshal
+    // as a struct then read the details
     if !thing.Get("from_earth").Bool() {
       var theThing Thing
       thing.Unmarshal(&theThing)
