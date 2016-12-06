@@ -29,8 +29,166 @@ Key features:
 [coveralls]: https://coveralls.io/github/go-restit/lzjson?branch=master
 [coveralls-badge]: https://coveralls.io/repos/github/go-restit/lzjson/badge.svg?branch=master
 
-
 ## Example Use
+
+### Decode a JSON
+
+Decode is straight forward with any [io.Reader](https://golang.org/pkg/io/#Reader)
+implementation (e.g.
+[http.Request.Body](https://golang.org/pkg/net/http/#Request),
+[http.Response.Body](https://golang.org/pkg/net/http/#Response),
+[strings.Reader](https://golang.org/pkg/strings/#Reader)).
+
+For example, in a [http.HandlerFunc](https://golang.org/pkg/net/http/#HandlerFunc):
+
+```go
+
+import (
+  "net/http"
+
+  "github.com/go-restit/lzjson"
+)
+
+
+func handler(w http.ResponseWriter, r *http.Request) {
+  json := lzjson.Decode(r.Body)
+  ...
+  ...
+}
+
+```
+
+Or as a client:
+
+```go
+func main() {
+  resp, _ := http.Get("http://foobarapi.com/things")
+  json := lzjson.Decode(resp.Body)
+  ...
+  ...
+}
+```
+
+### Get a node in an object or an array
+
+You may retrieve the JSON value of any node.
+
+```go
+// get "foo" in the json
+foo := json.Get("foo")
+
+// get the 10th item in foo
+// (like ordinary array, 0 is the first)
+item10 := foo.GetN(9)
+```
+
+### Every node knows what it is
+
+```go
+body := strings.NewReader(`
+{
+  "string": "hello world",
+  "number": 3.14,
+  "bool": true,
+  "array": [1, 2, 3, 5],
+  "object": {"foo": "bar"}
+}
+`)
+json := lzjson.Decode(body)
+
+fmt.Printf("%s", json.Get("string").Type()) // output "TypeString"
+fmt.Printf("%s", json.Get("number").Type()) // output "TypeNumber"
+fmt.Printf("%s", json.Get("bool").Type())   // output "TypeBool"
+fmt.Printf("%s", json.Get("array").Type())  // output "TypeArray"
+fmt.Printf("%s", json.Get("object").Type()) // output "TypeObject"
+```
+
+### Evaluating values a JSON node
+
+For basic value types (string, int, bool), you may evaluate them directly.
+
+```go
+code := json.Get("code").Int()
+message := json.Get("message").String()
+```
+
+### Partial Unmarsaling
+
+You may decode only a child-node in a JSON structure.
+
+```go
+
+type Item struct {
+  Name   string `json:"name"`
+  Weight int    `json:"weight"`
+}
+
+var item Item
+item10 := foo.GetN(9)
+item10.Unmarshal(&item)
+log.Printf("item: name=%s, weight=%d", item.Name, item.Weight)
+
+```
+
+### Chaining
+
+You may chain `Get` and `GetN` to get somthing deep within.
+
+```go
+
+helloIn10thBar := lzjson.Decode(r.Body).Get("foo").GetN(9).Get("hello")
+
+```
+
+### Looping Object or Array
+
+Looping is straight forward with `Len` and `GetKeys`.
+
+```go
+var item Item
+for i := 0; i<foo.Len(); i++ {
+  foo.Get(i).Unmarshal(&item)
+  log.Printf("i=%d, value=%#v", i, item)
+}
+
+for _, key := range json.GetKeys() {
+  log.Printf("key=%#v, value=%#v", key, json.Get(key).String())
+}
+```
+
+### Error knows their location
+
+With chaining, it is important where exactly did any parse error happen.
+
+```go
+
+body := strings.NewReader(`
+{
+  "hello": [
+    {
+      "name": "world 1"
+    },
+    {
+      "name": "world 2"
+    },
+    {
+      "name": "world 3"
+    },
+  ],
+}
+`)
+json := lzjson.Decode(body)
+
+inner := json.Get("hello").GetN(2).Get("foo").Get("bar").GetN(0)
+if err := inner.ParseError(); err != nil {
+  fmt.Println(err.Error()) // output: "hello[2].foo: undefined"
+}
+
+```
+
+### Full Example
+
+Put everything above together, we can do something like this:
 
 ```go
 
@@ -68,12 +226,15 @@ type Thing struct {
  */
 func main() {
   resp, err := http.Get("http://foobarapi.com/things")
+  if err != nil {
+    panic(err)
+  }
 
-  // decode the json as usual
+  // decode the json as usual, if no error
   json := lzjson.Decode(resp.Body)
   if code := json.Get("code").Int(); code != 200 {
     message := json.Get("message").String()
-    panic(message)
+    log.Fatalf("error %d: ", code, message)
   }
 
   // get the things array
@@ -82,6 +243,9 @@ func main() {
   // loop through the array
   for i := 0; i<things.Len(); i++ {
     thing := things.GetN(i)
+    if err := thing.ParseError(); err != nil {
+      log.Fatal(err.Error())
+    }
 
     // if the thing is not from earth, unmarshal
     // as a struct then read the details
